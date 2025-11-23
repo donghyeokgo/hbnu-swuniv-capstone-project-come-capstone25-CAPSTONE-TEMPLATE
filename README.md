@@ -23,6 +23,11 @@
     | GPU (선택) | NVIDIA GPU + CUDA 11 이상 --> DPR 인코딩 성능 향상 |
 
 - DPR 모델이 존재하지 않는 경우, 모델 디렉토리에 학습된 DPR 모델이 없을 시 자동으로 klue/roberta-base 모델로 fallback 하여 Dense Retrieval 수행되도록 설계.
+- 
+<img width="645" height="299" alt="(System) PDF 문서 파싱 기반 RAG 파이프라인_컴퓨터공학과" src="https://github.com/user-attachments/assets/1c46d5ec-8b4d-459e-8532-3f43036cbbca" />
+
+<img width="885" height="604" alt="(Sequence Diagram) PDF 문서 파싱 기반 RAG 파이프라인_컴퓨터공학과_Sequence Diagram" src="https://github.com/user-attachments/assets/210917cd-f43e-4511-9cfd-9de1c9680b0e" />
+
 
 - Architecture Overview
 
