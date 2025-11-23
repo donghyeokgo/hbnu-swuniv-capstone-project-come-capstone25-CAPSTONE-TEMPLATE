@@ -22,26 +22,58 @@
     | 실행 권장 환경 | 16GB RAM 이상                             |
     | GPU (선택) | NVIDIA GPU + CUDA 11 이상 --> DPR 인코딩 성능 향상 |
 
-- DPR 모델이 존재하지 않는 경우, 모델 디렉토리에 학습된 DPR 모델이 없을 시 자동으로 klue/roberta-base 모델로 fallback 하여 Dense Retrieval 수행되도록 설계.
+- DPR 모델이 존재하지 않는 경우, 모델 디렉토리에 학습된 DPR 모델이 없을 시 자동으로 klue/roberta-base 모델로 fallback 하여 Dense Retrieval 수행
   
-<img width="645" height="299" alt="(System) PDF 문서 파싱 기반 RAG 파이프라인_컴퓨터공학과" src="https://github.com/user-attachments/assets/1c46d5ec-8b4d-459e-8532-3f43036cbbca" />
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/1c46d5ec-8b4d-459e-8532-3f43036cbbca" width="700"/>
+      <br><b>(System) Architecture Overview</b>
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/210917cd-f43e-4511-9cfd-9de1c9680b0e" width="500"/>
+      <br><b>(Sequence) Retrieval Process</b>
+    </td>
+  </tr>
+</table>
 
 - Architecture Overview
 
-  - BM25 기반 키워드 검색 + DPR 기반 Dense Retrieval을 조합한 Hybrid RAG 시스템
+  - Hybrid Retrieval 기반 RAG 시스템
 
-  - PDF 문서 --> 텍스트 추출 --> 청킹(chunking) --> 인덱싱
+    - BM25 키워드 검색 + DPR Dense 검색을 결합하여 더 정확한 문서 검색 수행
 
-  - 사용자가 질의를 입력하면 Retriever가 유사도가 높은 문서를 탐색
+    - BM25는 키워드 일치 / DPR은 의미적 유사도 검색 → 점수 결합으로 Top-k 선정
 
-  - 상위 문서를 LLM에게 컨텍스트로 제공하여 답변 생성
+  - PDF 기반 문서 전처리 & 인덱싱
 
-  - FASTAPI 기반 서버 제공으로 웹, 내부 시스템과 연동 용이
+      - PDF → 텍스트 추출 → 의미 단위 청킹(chunking)
 
-<img width="885" height="604" alt="(Sequence Diagram) PDF 문서 파싱 기반 RAG 파이프라인_컴퓨터공학과_Sequence Diagram" src="https://github.com/user-attachments/assets/210917cd-f43e-4511-9cfd-9de1c9680b0e" />
+      - 각 청크에 metadata(문서 ID, 페이지, 섹션) 부여
 
+      - BM25 인덱스 + FAISS(Dense embedding) 인덱스 동시 구성
 
+  -  질의 입력 후 검색 & LLM 컨텍스트 생성
 
+      -  사용자 질의 → DPR 질문 인코더로 임베딩 → Dense 검색 수행
+
+      -  동시에 BM25 검색 수행 → 두 결과를 하이브리드로 재랭킹
+
+      - Top-k 문서를 LLM 프롬프트로 삽입해 답변 생성
+
+  - LLM 기반 답변 생성
+
+      -  System prompt + 사용자 질문 + 검색된 문서들을 기반으로 LLM 호출
+
+      -   컨텍스트 기반 답변 생성으로 환각(hallucination) 감소
+
+  -  FastAPI 기반 서비스화
+
+      - /rag 엔드포인트 통해 RAG 파이프라인 end-to-end 수행
+
+      -  웹 UI, 내부 업무 시스템, 챗봇 등과 쉽게 연동 가능
+
+      -  확장 가능 구조로 도메인 변경 시에도 동일 파이프라인 사용 가능
 
 ## Case Study
   - ### Description
